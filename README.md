@@ -4,7 +4,10 @@ Welcome to the central intelligence hub for the **Windows Security Auditing & Ov
 
 This repository serves as a structured laboratory environment containing configurations, raw/processed packet captures, host logs, analytical tools, and comprehensive reports validating host-level and network-level security telemetry for the Battle.net launcher, the Overwatch game client (`Overwatch.exe`), and their multi-cloud helper services.
 
+
+![Overwatch Gameplay Analysis](overwatch.png)
 ---
+
 
 ## 🗺️ Repository Architecture & Directory Tree
 
