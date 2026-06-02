@@ -1,0 +1,87 @@
+<!--
+  CUSTOM SYSMON CONFIG FOR STEAM MONITORING
+  Purpose: Monitor Steam client processes, network sockets, game launches, and DNS queries.
+-->
+
+<Sysmon schemaversion="4.50">
+	<HashAlgorithms>md5,sha256,IMPHASH</HashAlgorithms>
+	<CheckRevocation/>
+
+	<EventFiltering>
+
+		<!-- SYSMON EVENT ID 1 : PROCESS CREATION -->
+		<RuleGroup name="Steam Process Creations" groupRelation="or">
+			<ProcessCreate onmatch="include">
+				<!-- Core Steam Processes -->
+				<Image condition="contains">steam.exe</Image>
+				<Image condition="contains">steamservice.exe</Image>
+				<Image condition="contains">steamwebhelper.exe</Image>
+				
+				<!-- Common Steam Ecosystem Apps -->
+				<Image condition="contains">wallpaper64.exe</Image> <!-- Wallpaper Engine -->
+				<Image condition="contains">steamcmd.exe</Image>
+				
+				<!-- Game Launch Tracking (Capture any process spawned by Steam itself) -->
+				<ParentImage condition="contains">steam.exe</ParentImage>
+				<ParentImage condition="contains">steamservice.exe</ParentImage>
+				
+				<!-- Capture any process launched out of Steam directory -->
+				<CommandLine condition="contains">C:\Program Files (x86)\Steam</CommandLine>
+			</ProcessCreate>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 2 : FILE CREATION TIME CHANGES -->
+		<RuleGroup name="Steam File Time Modifications" groupRelation="or">
+			<FileCreateTime onmatch="include">
+				<TargetFilename condition="contains">C:\Program Files (x86)\Steam</TargetFilename>
+			</FileCreateTime>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 3 : NETWORK CONNECTION -->
+		<RuleGroup name="Steam Network Sockets" groupRelation="or">
+			<NetworkConnect onmatch="include">
+				<!-- Monitor ALL external and internal connections from Steam binaries -->
+				<Image condition="contains">steam.exe</Image>
+				<Image condition="contains">steamwebhelper.exe</Image>
+				
+				<!-- Monitor connections on standard Steam local/remote ports -->
+				<DestinationPort condition="is">27036</DestinationPort> <!-- Peer discovery / streaming -->
+				<DestinationPort condition="is">27015</DestinationPort> <!-- Server query -->
+				<DestinationPort condition="is">27018</DestinationPort> <!-- Valve Connection Manager -->
+				<SourcePort condition="is">27036</SourcePort>
+			</NetworkConnect>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 5 : PROCESS TERMINATION -->
+		<RuleGroup name="Steam Process Terminations" groupRelation="or">
+			<ProcessTerminate onmatch="include">
+				<Image condition="contains">steam.exe</Image>
+				<Image condition="contains">steamservice.exe</Image>
+				<Image condition="contains">steamwebhelper.exe</Image>
+				<Image condition="contains">wallpaper64.exe</Image>
+			</ProcessTerminate>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 11 : FILE CREATION (INSTALLS / DOWNLOADS) -->
+		<RuleGroup name="Steam File Operations" groupRelation="or">
+			<FileCreate onmatch="include">
+				<!-- Track when Steam downloads, writes, or installs game files -->
+				<Image condition="contains">steam.exe</Image>
+				<Image condition="contains">steamservice.exe</Image>
+				<!-- Capture files written to the Steam installation or download cache directory -->
+				<TargetFilename condition="contains">C:\Program Files (x86)\Steam\steamapps\downloading</TargetFilename>
+				<TargetFilename condition="contains">C:\Program Files (x86)\Steam\steamapps\common</TargetFilename>
+			</FileCreate>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 22 : DNS QUERY -->
+		<RuleGroup name="Steam DNS Requests" groupRelation="or">
+			<DnsQuery onmatch="include">
+				<!-- Monitor domain name resolutions made by Steam components -->
+				<Image condition="contains">steam.exe</Image>
+				<Image condition="contains">steamwebhelper.exe</Image>
+			</DnsQuery>
+		</RuleGroup>
+
+	</EventFiltering>
+</Sysmon>

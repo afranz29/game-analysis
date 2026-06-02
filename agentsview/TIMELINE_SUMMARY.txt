@@ -1,0 +1,186 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║           WINDOWS INVESTIGATION - AGENTSVIEW TIMELINE SUMMARY              ║
+║                    May 30, 2026 - June 2, 2026                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+PERIOD: 2026-05-30 02:00 UTC  →  2026-06-02 01:00 UTC
+DURATION: ~3 days, 5 peak activity hours
+TOTAL EVENTS: 1,140 across 9 sessions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HOUR-BY-HOUR ACTIVITY BREAKDOWN
+
+[2026-05-30 02:00]  █░░░░░░░░░░░░░░░░░░░░░░░░░░░ 37 events
+└─ SESSION: Claude TUI (5ab83b0f-083)
+   ACTIVITY: Initial environment setup and model configuration
+   FOCUS: System review and codebase analysis
+
+[2026-05-31 19:00]  ████░░░░░░░░░░░░░░░░░░░░░░░░ 240 events
+└─ SESSIONS: Claude API (cd0c62dd-12a) + Gemini (gemini44480)
+   ACTIVITY: Network traffic data processing
+   FOCUS: Converting PCAPNG files to Parquet format
+   KEY: Running pdml_to_parquet.py conversion scripts
+
+[2026-05-31 20:00]  ████████░░░░░░░░░░░░░░░░░░░░ 731 events ⭐ PEAK ACTIVITY
+└─ SESSIONS: Claude (f8f583d3-8f4) + Gemini (gemini44480)
+   ACTIVITY: Sysmon configuration analysis
+   FOCUS: Planning gaming application monitoring
+   KEY: Detailed Sysmon XML review and customization
+
+[2026-06-02 00:00]  █░░░░░░░░░░░░░░░░░░░░░░░░░░░ 26 events
+└─ SESSION: Claude (f8ced8fd-e12)
+   ACTIVITY: Validation review
+   FOCUS: Comparing monitoring outputs with event logs
+   KEY: Cross-reference sysmon config with vector events
+
+[2026-06-02 01:00]  ██░░░░░░░░░░░░░░░░░░░░░░░░░░ 106 events
+└─ SESSION: Claude (f8ced8fd-e12)
+   ACTIVITY: Comprehensive validation and gap analysis
+   FOCUS: Deep dive into monitoring effectiveness
+   KEY: osquery validation + event correlation analysis
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PRIMARY INVESTIGATION SUBJECTS
+
+  ✓ Data Processing & Export ............ 4 mentions
+    └─ Network captures → Parquet conversion
+    └─ PDML processing pipeline
+    └─ Schema development
+
+  ✓ Sysmon Configuration ............... 3 mentions
+    └─ XML structure analysis
+    └─ Gaming workload customization
+    └─ Event filter optimization
+
+  ✓ Vector Event Logs .................. 3 mentions
+    └─ Windows event JSON files
+    └─ Event stream validation
+    └─ Temporal analysis
+
+  ✓ Overwatch/Gaming Monitoring ........ 3 mentions
+    └─ Process monitoring patterns
+    └─ Network behavior detection
+    └─ Steam client monitoring
+
+  ✓ Validation & Verification .......... 3 mentions
+    └─ Source correlation
+    └─ Gap identification
+    └─ Coverage verification
+
+  ✓ Network Traffic Analysis ........... 3 mentions
+    └─ PCAPNG file analysis
+    └─ Protocol identification
+    └─ Endpoint mapping
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+APPROACHES & METHODOLOGIES
+
+  Analysis & Review ........................ 5 occurrences
+  ├─ Reviewing XML configurations
+  ├─ Examining event logs
+  ├─ Analyzing monitoring output
+  └─ Comparing data sources
+
+  Implementation & Creation ............... 3 occurrences
+  ├─ Modifying Sysmon configs
+  ├─ Creating conversion scripts
+  └─ Developing monitoring rules
+
+  Testing & Validation .................... 2 occurrences
+  ├─ Cross-verification of events
+  └─ Validation checks
+
+  Correlation & Mapping ................... 1 occurrence
+  └─ Event correlation analysis
+
+  Scanning & Querying ..................... 1 occurrence
+  └─ System state enumeration
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+KEY FILES REFERENCED
+
+  Configuration Files:
+    • sysmonconfig-export.xml .......... Base Sysmon template
+    • sysmon-gaming-monitoring.xml .... Gaming-specific config
+    • sysmon-overwatch-monitoring.xml  Overwatch config
+
+  Data & Processing:
+    • pdml_to_parquet.py .............. Conversion script
+    • PDML.md ......................... Conversion guide
+    • vector-json/ .................... Event log directory
+    • vector-json-old/ ................ Previous events
+
+  Documentation:
+    • OVERWATCH.md .................... Investigation guide
+    • VALIDATION_SUMMARY.md ........... Validation findings
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+INVESTIGATION PROGRESSION
+
+  PHASE 1: FOUNDATION (May 30-31)
+  ────────────────────────────────
+  • Initial environment setup
+  • Network traffic data processing
+  • Data pipeline development
+  
+  PHASE 2: CONFIGURATION (May 31)
+  ───────────────────────────────
+  • Deep analysis of Sysmon configuration
+  • Gaming application monitoring planning
+  • Highest investigation intensity (731 events)
+  
+  PHASE 3: VALIDATION (June 2)
+  ──────────────────────────────
+  • Cross-verification of monitoring outputs
+  • Event correlation analysis
+  • Gap identification and recommendations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TOOLS & TECHNOLOGIES EMPLOYED
+
+  Monitoring & Analysis:
+    • Sysmon ......................... Windows event monitoring
+    • Vector ......................... Log aggregation
+    • osquery ........................ System queries
+    • Wireshark (PCAPNG) ............ Network capture analysis
+
+  Data Formats:
+    • XML ........................... Sysmon configurations
+    • JSON .......................... Event logs
+    • PCAPNG ........................ Network packets
+    • Parquet ....................... Analytical storage
+    • CSV ........................... Timeline exports
+
+  AI Agents:
+    • Claude (Haiku 4.5/Opus 4.7) ... Primary investigation
+    • Gemini ........................ Supporting analysis
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ANALYSIS ARTIFACTS GENERATED
+
+  ✓ INVESTIGATION_SUMMARY.md ......... Executive summary + findings
+  ✓ INVESTIGATION_TIMELINE.md ....... Detailed hour-by-hour report
+  ✓ DETAILED_TIMELINE.md ............ Subject-focused breakdown
+  ✓ SESSION_ANALYSIS.md ............ Initial session summary
+  ✓ investigation_timeline.csv ...... Structured data export
+  ✓ README.md ....................... Navigation guide
+  ✓ TIMELINE_SUMMARY.txt ........... This file
+
+  Plus: 9 JSONL session exports (raw agentsview data)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+INVESTIGATION STATUS: SNAPSHOT CAPTURED
+├─ Active investigation period documented
+├─ Multiple agents tracked and analyzed
+├─ Investigation continues beyond this window
+└─ Recommendations provided for continuation
+
+Generated: 2026-06-02 | Platform: Windows 11 | Tools: Claude Code + Python/uv

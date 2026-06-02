@@ -1,0 +1,320 @@
+<!--
+  GAMING MONITORING CONFIG V2.0 (OVERWATCH & STEAM)
+  
+  Changes from v1:
+  - Added selective loopback monitoring for gaming processes
+  - Added crash reporter (CrashMailer) capture
+  - Added Event ID 10 exclusions to reduce volume
+  - Documented process lifecycle behaviors
+  - Added Event ID 29 for executable detection
+  
+  Features: 
+  - Process lifecycle monitoring (create, terminate, access)
+  - Selective loopback IPC capture for gaming processes
+  - Broad Network Connection Monitoring (non-gaming loopback excluded)
+  - Broad DNS Query Monitoring (ALL system queries)
+  - Generic Steam Game Directory Tracking (\steamapps\common\)
+  - Focused File Operations on Game Folders
+  - Reduced Event ID 10 noise via benign exclusions
+-->
+
+<Sysmon schemaversion="4.50">
+	<HashAlgorithms>md5,sha256,IMPHASH</HashAlgorithms>
+	<CheckRevocation/>
+
+	<EventFiltering>
+
+		<!-- SYSMON EVENT ID 1 : PROCESS CREATION -->
+		<RuleGroup name="Gaming Process Creations" groupRelation="or">
+			<ProcessCreate onmatch="include">
+				<!-- Overwatch and Battle.net Processes -->
+				<!-- Process flow: Battle.net Launcher.exe → Battle.net.exe (--from-launcher) → Overwatch.exe -->
+				<Image condition="contains">Overwatch</Image>
+				<Image condition="contains">Battle.net</Image>
+				<Image condition="contains">Agent.exe</Image>
+				<ParentImage condition="contains">Overwatch</ParentImage>
+				<ParentImage condition="contains">Battle.net</ParentImage>
+				<CommandLine condition="contains">Overwatch</CommandLine>
+				
+				<!-- Crash Reporters (Added in v2) -->
+				<Image condition="contains">\ErrorReporting\</Image>
+				<Image condition="contains">CrashMailer</Image>
+				
+				<!-- Steam Launcher Processes -->
+				<Image condition="contains">steam.exe</Image>
+				<Image condition="contains">steamservice.exe</Image>
+				<Image condition="contains">steamwebhelper.exe</Image>
+				<Image condition="contains">wallpaper64.exe</Image>
+				<Image condition="contains">steamcmd.exe</Image>
+				
+				<!-- Generic Steam Game Launcher Path (Captures ANY game launched via Steam common directory) -->
+				<Image condition="contains">\steamapps\common\</Image>
+				<ParentImage condition="contains">\steamapps\common\</ParentImage>
+				
+				<!-- Game Launch Tracking (Spawned by Steam or Battle.net launcher) -->
+				<ParentImage condition="contains">steam.exe</ParentImage>
+				<ParentImage condition="contains">steamservice.exe</ParentImage>
+				
+				<!-- Capture any process launched out of Steam or Overwatch directories -->
+				<CommandLine condition="contains">C:\Program Files (x86)\Steam</CommandLine>
+				<CommandLine condition="contains">C:\Program Files (x86)\Overwatch</CommandLine>
+			</ProcessCreate>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 2 : FILE CREATION TIME CHANGES -->
+		<RuleGroup name="Gaming File Time Modifications" groupRelation="or">
+			<FileCreateTime onmatch="include">
+				<TargetFilename condition="contains">Overwatch</TargetFilename>
+				<TargetFilename condition="contains">C:\Program Files (x86)\Steam</TargetFilename>
+			</FileCreateTime>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 3 : NETWORK CONNECTION -->
+		<!-- NEW in v2: Selective loopback capture for gaming processes -->
+		<RuleGroup name="Gaming Loopback IPC" groupRelation="or">
+			<NetworkConnect onmatch="include">
+				<!-- Capture local IPC for gaming processes only -->
+				<Image condition="contains">Overwatch</Image>
+				<DestinationIp condition="is">127.0.0.1</DestinationIp>
+			</NetworkConnect>
+			<NetworkConnect onmatch="include">
+				<Image condition="contains">Battle.net</Image>
+				<DestinationIp condition="is">127.0.0.1</DestinationIp>
+			</NetworkConnect>
+			<NetworkConnect onmatch="include">
+				<Image condition="contains">Agent.exe</Image>
+				<DestinationIp condition="is">127.0.0.1</DestinationIp>
+			</NetworkConnect>
+			<NetworkConnect onmatch="include">
+				<Image condition="contains">\steamapps\common\</Image>
+				<DestinationIp condition="is">127.0.0.1</DestinationIp>
+			</NetworkConnect>
+		</RuleGroup>
+		
+		<!-- Broad monitoring: exclude loopback for non-gaming processes -->
+		<RuleGroup name="Broad Network Monitoring" groupRelation="or">
+			<NetworkConnect onmatch="exclude">
+				<!-- Exclude localhost / loopback IPC for non-gaming to prevent log flooding -->
+				<DestinationIp condition="is">127.0.0.1</DestinationIp>
+				<DestinationIp condition="is">::1</DestinationIp>
+				<SourceIp condition="is">127.0.0.1</SourceIp>
+				<SourceIp condition="is">::1</SourceIp>
+			</NetworkConnect>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 5 : PROCESS TERMINATION -->
+		<RuleGroup name="Gaming Process Terminations" groupRelation="or">
+			<ProcessTerminate onmatch="include">
+				<!-- Overwatch and Battle.net -->
+				<Image condition="contains">Overwatch</Image>
+				<Image condition="contains">Battle.net</Image>
+				<Image condition="contains">Agent.exe</Image>
+				<Image condition="contains">CrashMailer</Image>
+				
+				<!-- Steam Core & Launcher -->
+				<Image condition="contains">steam.exe</Image>
+				<Image condition="contains">steamservice.exe</Image>
+				<Image condition="contains">steamwebhelper.exe</Image>
+				<Image condition="contains">wallpaper64.exe</Image>
+				
+				<!-- Generic Steam Game Path (Captures exits of ANY Steam game) -->
+				<Image condition="contains">\steamapps\common\</Image>
+				<Image condition="contains">crashpad_handler.exe</Image>
+			</ProcessTerminate>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 6 : DRIVER LOADED -->
+		<RuleGroup name="Gaming Drivers" groupRelation="or">
+			<DriverLoad onmatch="include">
+				<ImageLoaded condition="contains">Overwatch</ImageLoaded>
+				<ImageLoaded condition="contains">steam</ImageLoaded>
+			</DriverLoad>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 7 : DLL LOADED -->
+		<RuleGroup name="Gaming DLL Loads" groupRelation="or">
+			<ImageLoad onmatch="include">
+				<Image condition="contains">Overwatch</Image>
+				<ImageLoaded condition="contains">Overwatch</ImageLoaded>
+				
+				<!-- Steam -->
+				<Image condition="contains">steam.exe</Image>
+				<ImageLoaded condition="contains">steam</ImageLoaded>
+			</ImageLoad>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 8 : REMOTE THREAD CREATION -->
+		<RuleGroup name="Gaming Remote Threads" groupRelation="or">
+			<CreateRemoteThread onmatch="include">
+				<!-- Overwatch Cheat Detection -->
+				<TargetImage condition="contains">Overwatch</TargetImage>
+				<SourceImage condition="contains">Overwatch</SourceImage>
+				
+				<!-- Steam Cheat Detection -->
+				<TargetImage condition="contains">steam.exe</TargetImage>
+				<SourceImage condition="contains">steam.exe</SourceImage>
+			</CreateRemoteThread>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 9 : RAW DISK ACCESS -->
+		<RuleGroup name="Gaming Raw Disk Access" groupRelation="or">
+			<RawAccessRead onmatch="include">
+				<Image condition="contains">Overwatch</Image>
+				<Image condition="contains">steam.exe</Image>
+			</RawAccessRead>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 10 : INTER-PROCESS ACCESS -->
+		<RuleGroup name="Gaming Interprocess Access" groupRelation="or">
+			<ProcessAccess onmatch="include">
+				<!-- Monitor handle access into Overwatch -->
+				<TargetImage condition="contains">Overwatch</TargetImage>
+				
+				<!-- Monitor handle access into Steam -->
+				<TargetImage condition="contains">steam.exe</TargetImage>
+				
+				<!-- Generic Steam Game Path (Monitor handles opened on ANY Steam game) -->
+				<TargetImage condition="contains">\steamapps\common\</TargetImage>
+			</ProcessAccess>
+		</RuleGroup>
+		
+		<!-- NEW in v2: Exclude benign system process access to reduce volume -->
+		<RuleGroup name="Process Access Exclusions" groupRelation="or">
+			<ProcessAccess onmatch="exclude">
+				<!-- Windows Explorer (file manager) -->
+				<SourceImage condition="is">C:\Windows\explorer.exe</SourceImage>
+				
+				<!-- Windows Defender (security scanner) -->
+				<SourceImage condition="contains">MsMpEng.exe</SourceImage>
+				<SourceImage condition="contains">MpCopyAccelerator.exe</SourceImage>
+				
+				<!-- Windows Game Bar (expected access) -->
+				<SourceImage condition="contains">GameBarFTServer.exe</SourceImage>
+				<SourceImage condition="contains">GamingServices.exe</SourceImage>
+				
+				<!-- WMI (system monitoring) -->
+				<SourceImage condition="contains">wmiprvse.exe</SourceImage>
+				
+				<!-- NVIDIA Overlay (expected for gaming) -->
+				<SourceImage condition="contains">NVDisplay.Container.exe</SourceImage>
+				
+				<!-- Discord overlay (common and benign) -->
+				<SourceImage condition="contains">Discord.exe</SourceImage>
+			</ProcessAccess>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 11 : FILE CREATED (FOCUSED ON GAME DIRECTORIES) -->
+		<RuleGroup name="Gaming File Creations" groupRelation="or">
+			<FileCreate onmatch="include">
+				<!-- Overwatch -->
+				<TargetFilename condition="contains">Overwatch</TargetFilename>
+				<TargetFilename condition="contains">\Battle.net\</TargetFilename>
+				<TargetFilename condition="contains">\Blizzard Entertainment\</TargetFilename>
+				<Image condition="contains">Overwatch</Image>
+				
+				<!-- Steam -->
+				<Image condition="contains">steam.exe</Image>
+				<Image condition="contains">steamservice.exe</Image>
+				<TargetFilename condition="contains">C:\Program Files (x86)\Steam\steamapps\downloading</TargetFilename>
+				<TargetFilename condition="contains">C:\Program Files (x86)\Steam\steamapps\common</TargetFilename>
+			</FileCreate>
+		</RuleGroup>
+
+		<RuleGroup name="File Exclusions" groupRelation="or">
+			<FileCreate onmatch="exclude">
+				<TargetFilename condition="contains">\Overwatch\Cache\</TargetFilename>
+				<TargetFilename condition="contains">\Overwatch\Temp\</TargetFilename>
+			</FileCreate>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 12, 13, 14 : REGISTRY EVENTS -->
+		<RuleGroup name="Gaming Registry Activities" groupRelation="or">
+			<RegistryEvent onmatch="include">
+				<!-- Overwatch -->
+				<TargetObject condition="contains">Overwatch</TargetObject>
+				<TargetObject condition="contains">Battle.net</TargetObject>
+				<TargetObject condition="contains">Blizzard Entertainment</TargetObject>
+				
+				<!-- Steam -->
+				<TargetObject condition="contains">Steam</TargetObject>
+				<TargetObject condition="contains">Valve</TargetObject>
+			</RegistryEvent>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 15 : ALTERNATE DATA STREAMS -->
+		<RuleGroup name="Gaming ADS" groupRelation="or">
+			<FileCreateStreamHash onmatch="include">
+				<TargetFilename condition="contains">Overwatch</TargetFilename>
+				<TargetFilename condition="contains">C:\Program Files (x86)\Steam</TargetFilename>
+			</FileCreateStreamHash>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 17 & 18 : NAMED PIPES -->
+		<RuleGroup name="Gaming Named Pipes" groupRelation="or">
+			<PipeEvent onmatch="include">
+				<!-- Overwatch -->
+				<Image condition="contains">Overwatch</Image>
+				<Image condition="contains">Battle.net</Image>
+				<PipeName condition="contains">Overwatch</PipeName>
+				<PipeName condition="contains">Battle</PipeName>
+				<PipeName condition="contains">Blizzard</PipeName>
+				
+				<!-- Steam -->
+				<Image condition="contains">steam.exe</Image>
+				<PipeName condition="contains">steam</PipeName>
+			</PipeEvent>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 19, 20, 21 : WMI EVENTS -->
+		<RuleGroup name="Gaming WMI Consumers" groupRelation="or">
+			<WmiEvent onmatch="include">
+				<Consumer condition="contains">Overwatch</Consumer>
+				<Filter condition="contains">Overwatch</Filter>
+			</WmiEvent>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 22 : DNS QUERIES (BROAD MONITORING - LOGS ALL SYSTEM DNS ACTIVITY) -->
+		<RuleGroup name="Broad DNS Monitoring" groupRelation="or">
+			<DnsQuery onmatch="exclude">
+				<!-- Empty exclude means Sysmon logs EVERY single DNS query on the system -->
+			</DnsQuery>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 23 : FILE DELETE (FOCUSED ON GAME DIRECTORIES) -->
+		<RuleGroup name="Gaming File Deletions" groupRelation="or">
+			<FileDelete onmatch="include">
+				<TargetFilename condition="contains">Overwatch</TargetFilename>
+				<Image condition="contains">Overwatch</Image>
+				<TargetFilename condition="contains">C:\Program Files (x86)\Steam</TargetFilename>
+				<Image condition="contains">steam.exe</Image>
+			</FileDelete>
+		</RuleGroup>
+
+		<!-- SYSMON EVENT ID 25 : PROCESS TAMPERING -->
+		<RuleGroup name="Gaming Process Tampering Rules" groupRelation="or">
+			<ProcessTampering onmatch="include">
+				<Image condition="contains">Overwatch</Image>
+				<Image condition="contains">steam.exe</Image>
+			</ProcessTampering>
+		</RuleGroup>
+		
+		<!-- SYSMON EVENT ID 29 : FILE EXECUTABLE DETECTED (NEW in v2) -->
+		<RuleGroup name="Gaming Executable Detection" groupRelation="or">
+			<FileExecutableDetected onmatch="include">
+				<!-- Detect new executables in game directories (potential cheat DLLs/mods) -->
+				<TargetFilename condition="contains">Overwatch</TargetFilename>
+				<TargetFilename condition="contains">C:\Program Files (x86)\Steam\steamapps\common</TargetFilename>
+			</FileExecutableDetected>
+		</RuleGroup>
+		
+		<!-- Exclude known game executables to reduce noise -->
+		<RuleGroup name="Executable Detection Exclusions" groupRelation="or">
+			<FileExecutableDetected onmatch="exclude">
+				<TargetFilename condition="is">C:\Program Files (x86)\Overwatch\_retail_\Overwatch.exe</TargetFilename>
+				<TargetFilename condition="contains">\ErrorReporting\</TargetFilename>
+				<TargetFilename condition="contains">CrashMailer</TargetFilename>
+			</FileExecutableDetected>
+		</RuleGroup>
+
+	</EventFiltering>
+</Sysmon>

@@ -1,0 +1,35 @@
+# vector.toml
+
+
+# ------------------------------------------------------------------------------
+# GLOBAL OPTIONS
+# ------------------------------------------------------------------------------
+# Define the temporary/state directory for Vector.
+# Ensure this folder exists or Vector has permissions to create it.
+data_dir = "vector_data"
+
+# ------------------------------------------------------------------------------
+# SOURCES
+# ------------------------------------------------------------------------------
+[sources.win_logs]
+type = "windows_event_log"
+channels = [
+  "Application",
+  "System",
+  "Security",
+  "Microsoft-Windows-Sysmon/Operational"
+]
+# read_existing_events = true
+
+# ------------------------------------------------------------------------------
+# SINKS
+# ------------------------------------------------------------------------------
+[sinks.local_json_file]
+type = "file"
+inputs = ["win_logs"]
+# The path where the JSON logs will be saved. 
+# %Y-%m-%d automatically rotates the file daily based on the date.
+path = "D:\\WindowsInvestigations\\vector-json\\windows_events-%Y-%m-%d.json"
+
+[sinks.local_json_file.encoding]
+codec = "json"

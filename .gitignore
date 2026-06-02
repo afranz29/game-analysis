@@ -1,0 +1,52 @@
+# ==============================================================================
+# Gitignore for Windows Security Analysis Workspace
+# Ensures large datasets, packet captures, logs, and temporary files are ignored.
+# ==============================================================================
+
+# --- Captured Network Traffic & Analysis ---
+# These files are extremely large packet captures and protocols (up to multiple GBs)
+*.pcap
+*.pcapng
+*.pdml
+
+# --- Enriched Datasets & CSV Exports ---
+# Intermediate and final data structures generated during analysis (parquet, csv)
+*.parquet
+*.csv
+*.tsv
+
+# --- Logs and Transcripts ---
+# Contains event logs, raw agent session files, and general log files
+*.log
+*.evtx
+*.jsonl
+# Ignores all raw event JSON files (vector events can be 100MB+)
+*.json
+
+# --- Virtual Environments and Cache ---
+# Python virtual environments, cache, and system-specific files
+.venv/
+venv/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Vector Logs Directories ---
+# Directory trees containing large collections of vector log segments
+vector-json/
+vector-json-nonadmin/
+vector-json-old/
+vector_data/
+
+# --- Agent-generated/CLI Data ---
+.antigravitycli/
+# Note: We keep the markdown reports in agentsview/ but ignore raw session logs (*.jsonl)
+# since *.jsonl is globally ignored above.
+
+# --- OS-specific Garbage ---
+.DS_Store
+Thumbs.db

@@ -1,0 +1,193 @@
+<!--
+  CUSTOM SYSMON CONFIG FOR OVERWATCH MONITORING
+  Modified from SwiftOnSecurity's sysmon-config
+  Purpose: Monitor Overwatch game processes, network traffic, and file operations
+-->
+
+<Sysmon schemaversion="4.50">
+	<HashAlgorithms>md5,sha256,IMPHASH</HashAlgorithms>
+	<CheckRevocation/>
+
+	<EventFiltering>
+
+	<!--SYSMON EVENT ID 1 : PROCESS CREATION-->
+	<RuleGroup name="" groupRelation="or">
+		<ProcessCreate onmatch="include">
+			<!-- Overwatch and Battle.net processes -->
+			<Image condition="contains">Overwatch</Image>
+			<Image condition="contains">Battle.net</Image>
+			<Image condition="contains">Agent.exe</Image> <!--Blizzard Agent-->
+			<ParentImage condition="contains">Overwatch</ParentImage>
+			<ParentImage condition="contains">Battle.net</ParentImage>
+			<!-- Monitor any process accessing Overwatch directory -->
+			<CommandLine condition="contains">Overwatch</CommandLine>
+		</ProcessCreate>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 2 : FILE CREATION TIME CHANGES-->
+	<RuleGroup name="" groupRelation="or">
+		<FileCreateTime onmatch="include">
+			<TargetFilename condition="contains">Overwatch</TargetFilename>
+		</FileCreateTime>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 3 : NETWORK CONNECTION-->
+	<RuleGroup name="" groupRelation="or">
+		<NetworkConnect onmatch="include">
+			<!-- Monitor ALL network connections from Overwatch processes -->
+			<Image condition="contains">Overwatch</Image>
+			<Image condition="contains">Battle.net</Image>
+			<Image condition="contains">Agent.exe</Image>
+			<!-- Monitor connections to Blizzard servers -->
+			<DestinationIp condition="begin with">24.105.</DestinationIp> <!--Blizzard IP range-->
+			<DestinationIp condition="begin with">12.129.</DestinationIp> <!--Blizzard IP range-->
+		</NetworkConnect>
+	</RuleGroup>
+
+	<RuleGroup name="" groupRelation="or">
+		<NetworkConnect onmatch="exclude">
+			<!-- Optional: exclude noise if needed -->
+		</NetworkConnect>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 5 : PROCESS TERMINATION-->
+	<RuleGroup name="" groupRelation="or">
+		<ProcessTerminate onmatch="include">
+			<Image condition="contains">Overwatch</Image>
+			<Image condition="contains">Battle.net</Image>
+			<Image condition="contains">Agent.exe</Image>
+		</ProcessTerminate>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 6 : DRIVER LOADED-->
+	<RuleGroup name="" groupRelation="or">
+		<DriverLoad onmatch="include">
+			<!-- Monitor any drivers loaded by Overwatch (anti-cheat systems) -->
+			<ImageLoaded condition="contains">Overwatch</ImageLoaded>
+		</DriverLoad>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 7 : DLL LOADED-->
+	<RuleGroup name="" groupRelation="or">
+		<ImageLoad onmatch="include">
+			<!-- Monitor DLLs loaded by Overwatch processes -->
+			<Image condition="contains">Overwatch</Image>
+			<ImageLoaded condition="contains">Overwatch</ImageLoaded>
+		</ImageLoad>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 8 : REMOTE THREAD CREATION-->
+	<RuleGroup name="" groupRelation="or">
+		<CreateRemoteThread onmatch="include">
+			<!-- Detect code injection into Overwatch (cheats/hacks) -->
+			<TargetImage condition="contains">Overwatch</TargetImage>
+			<SourceImage condition="contains">Overwatch</SourceImage>
+		</CreateRemoteThread>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 9 : RAW DISK ACCESS-->
+	<RuleGroup name="" groupRelation="or">
+		<RawAccessRead onmatch="include">
+			<Image condition="contains">Overwatch</Image>
+		</RawAccessRead>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 10 : INTER-PROCESS ACCESS-->
+	<RuleGroup name="" groupRelation="or">
+		<ProcessAccess onmatch="include">
+			<!-- Monitor processes accessing Overwatch memory (cheat detection) -->
+			<TargetImage condition="contains">Overwatch</TargetImage>
+			<SourceImage condition="contains">Overwatch</SourceImage>
+		</ProcessAccess>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 11 : FILE CREATED-->
+	<RuleGroup name="" groupRelation="or">
+		<FileCreate onmatch="include">
+			<!-- Monitor file operations in Overwatch directories -->
+			<TargetFilename condition="contains">Overwatch</TargetFilename>
+			<TargetFilename condition="contains">\Battle.net\</TargetFilename>
+			<TargetFilename condition="contains">\Blizzard Entertainment\</TargetFilename>
+			<!-- Monitor specific file types -->
+			<Image condition="contains">Overwatch</Image>
+		</FileCreate>
+	</RuleGroup>
+
+	<RuleGroup name="" groupRelation="or">
+		<FileCreate onmatch="exclude">
+			<!-- Exclude cache/temp files if too noisy -->
+			<TargetFilename condition="contains">\Overwatch\Cache\</TargetFilename>
+			<TargetFilename condition="contains">\Overwatch\Temp\</TargetFilename>
+		</FileCreate>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 12, 13, 14 : REGISTRY EVENTS-->
+	<RuleGroup name="" groupRelation="or">
+		<RegistryEvent onmatch="include">
+			<!-- Monitor Overwatch registry modifications -->
+			<TargetObject condition="contains">Overwatch</TargetObject>
+			<TargetObject condition="contains">Battle.net</TargetObject>
+			<TargetObject condition="contains">Blizzard Entertainment</TargetObject>
+		</RegistryEvent>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 15 : ALTERNATE DATA STREAMS-->
+	<RuleGroup name="" groupRelation="or">
+		<FileCreateStreamHash onmatch="include">
+			<TargetFilename condition="contains">Overwatch</TargetFilename>
+		</FileCreateStreamHash>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 17 & 18 : NAMED PIPES-->
+	<RuleGroup name="" groupRelation="or">
+		<PipeEvent onmatch="include">
+			<!-- Monitor named pipes created by Overwatch -->
+			<Image condition="contains">Overwatch</Image>
+			<Image condition="contains">Battle.net</Image>
+			<PipeName condition="contains">Overwatch</PipeName>
+			<PipeName condition="contains">Battle</PipeName>
+			<PipeName condition="contains">Blizzard</PipeName>
+		</PipeEvent>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 19, 20, 21 : WMI EVENTS-->
+	<RuleGroup name="" groupRelation="or">
+		<WmiEvent onmatch="include">
+			<!-- Monitor WMI activity related to Overwatch -->
+			<Consumer condition="contains">Overwatch</Consumer>
+			<Filter condition="contains">Overwatch</Filter>
+		</WmiEvent>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 22 : DNS QUERIES-->
+	<RuleGroup name="" groupRelation="or">
+		<DnsQuery onmatch="include">
+			<!-- Monitor DNS queries from Overwatch processes -->
+			<Image condition="contains">Overwatch</Image>
+			<Image condition="contains">Battle.net</Image>
+			<Image condition="contains">Agent.exe</Image>
+			<!-- Monitor queries to Blizzard domains -->
+			<QueryName condition="contains">blizzard</QueryName>
+			<QueryName condition="contains">battle.net</QueryName>
+			<QueryName condition="contains">blzstatic</QueryName>
+		</DnsQuery>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 23 : FILE DELETE-->
+	<RuleGroup name="" groupRelation="or">
+		<FileDelete onmatch="include">
+			<TargetFilename condition="contains">Overwatch</TargetFilename>
+			<Image condition="contains">Overwatch</Image>
+		</FileDelete>
+	</RuleGroup>
+
+	<!--SYSMON EVENT ID 25 : PROCESS TAMPERING-->
+	<RuleGroup name="" groupRelation="or">
+		<ProcessTampering onmatch="include">
+			<!-- Detect tampering with Overwatch processes (anti-cheat bypass) -->
+			<Image condition="contains">Overwatch</Image>
+		</ProcessTampering>
+	</RuleGroup>
+
+	</EventFiltering>
+</Sysmon>
