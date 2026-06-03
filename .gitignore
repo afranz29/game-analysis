@@ -50,3 +50,6 @@ vector_data/
 # --- OS-specific Garbage ---
 .DS_Store
 Thumbs.db
+
+# --- Images ---
+article-images/
