@@ -1,4 +1,4 @@
-# Windows Security & Overwatch Gameplay Analysis Workspace
+# Watching Over Overwatch: Windows Security & Overwatch Gameplay Analysis Workspace
 
 Welcome to the central intelligence hub for the **Windows Security Auditing & Overwatch Gameplay Monitoring** investigation. 
 
